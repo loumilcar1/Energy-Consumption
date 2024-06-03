@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace EnergyConsumption
+namespace ParserData
 {
     public class Parser
     {
         public List<(double Value, DateTime Datetime)> ParseData(string jsonData)
         {
-            Root root = JsonSerializer.Deserialize<Root>(jsonData);
+            EnergyData energyData = JsonSerializer.Deserialize<EnergyData>(jsonData);
 
             List<(double Value, DateTime Datetime)> parsedData = new List<(double, DateTime)>();
-            foreach (var included in root.Included)
+            foreach (var included in energyData.Included)
             {
                 if (included.Attributes?.Values != null)
                 {

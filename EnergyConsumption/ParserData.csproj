@@ -159,7 +159,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Deserialize.cs" />
+    <Compile Include="EnergyData.cs" />
     <Compile Include="Fetcher.cs" />
     <Compile Include="MongoDBHandler.cs" />
     <Compile Include="Parser.cs" />

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace EnergyConsumption
+namespace ParserData
 {
-    public class Root
+    public class EnergyData
     {
         [JsonPropertyName("data")]
         public Data Data { get; set; }

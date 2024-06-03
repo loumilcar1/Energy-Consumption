@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EnergyConsumption
+namespace ParserData
 {
     class Program
     {
@@ -23,15 +23,6 @@ namespace EnergyConsumption
                 Fetcher fetcher = new Fetcher();
                 MongoDBHandler mongoDBHandler = new MongoDBHandler(mongoConnectionString, mongoDatabaseName, mongoCollectionName);
 
-                // Obtener la comunidad
-                string region = GetCommunity(geoId);
-
-                if (region == "Region no encontrada")
-                {
-                    Console.WriteLine("Error: Region no encontrada.");
-                    return;
-                }
-
                 // 1- Obtener datos de la API
                 string data = await fetcher.FetchDataAsync();
                 
@@ -45,6 +36,15 @@ namespace EnergyConsumption
 
                 // 2- Parsear datos obtenidos
                 List<(double Value, DateTime Datetime)> parsedData = ParseData(parser, data);
+
+                // Obtener la region
+                string region = GetCommunity(geoId);
+
+                if (region == "Region no encontrada")
+                {
+                    Console.WriteLine("Error: Region no encontrada.");
+                    return;
+                }
 
                 //Imprimir datos parseados por consola
                 Console.WriteLine($"Los datos obtenidos pertenecen a: {region}");

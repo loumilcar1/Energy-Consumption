@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Configuration;
 
-namespace EnergyConsumption
+namespace ParserData
 {
     class Fetcher
     {
@@ -32,7 +32,7 @@ namespace EnergyConsumption
 
         public async Task<string> FetchDataAsync()
         {
-            //URL completa
+            //URL completa:https://apidatos.ree.es/es/datos/demanda/evolucion?start_date=2023-01-01T00:00&end_date=2023-12-31T23:59&time_trunc=month&geo_limit=ccaa&geo_ids=4
             string url = $"{baseUrl}?start_date={startDate}&end_date={endDate}&time_trunc={timeTrunc}&geo_limit={geoLimit}&geo_ids={geoIds}";
            
             try
