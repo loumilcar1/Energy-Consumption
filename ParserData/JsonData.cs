@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace ParserData
 {
-    public class EnergyData
+    public class JsonData
     {
         [JsonPropertyName("data")]
         public Data Data { get; set; }
@@ -93,7 +93,7 @@ namespace ParserData
     public class Value
     {
         [JsonPropertyName("value")]
-        public double ValueAmount { get; set; }
+        public decimal value { get; set; }
 
         [JsonPropertyName("datetime")]
         public string Datetime { get; set; }

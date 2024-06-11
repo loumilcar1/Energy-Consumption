@@ -40,5 +40,34 @@ namespace ParserData
 
             await _collection.InsertOneAsync(document);
         }
+
+        public async Task<List<DataCSV>> GetDataAsync()
+        {
+            var documents = await _collection.Find(new BsonDocument()).ToListAsync();
+            var records = new List<DataCSV>();
+
+            foreach (var document in documents)
+            {
+                var id = document["_id"].ToString();
+                var values = document["values"].AsBsonArray;
+
+                foreach (var valueDoc in values)
+                {
+                    var value = valueDoc["value"].ToDouble();
+                    var datetime = valueDoc["datetime"].ToUniversalTime().ToString("o");
+
+                    var record = new DataCSV { Id = id, Value = value, DateTime = datetime };
+                    records.Add(record);
+                }
+            }
+
+            return records;
+        }
+    }
+    public class DataCSV
+    {
+        public string Id { get; set; }
+        public double Value { get; set; }
+        public string DateTime { get; set; }
     }
 }
