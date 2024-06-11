@@ -158,7 +158,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UpdateCSV.cs" />
-    <Compile Include="UpdateOrCreateCSV.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

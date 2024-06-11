@@ -34,7 +34,7 @@ namespace Collector
             {
                 if (!fileExists)
                 {
-                    // Escribir la cabecera si el archivo no existe
+                    // Write the header if the file does not exist
                     csv.Context.RegisterClassMap<DataCSVMap>();
                     csv.WriteHeader<DataCSV>();
                     csv.NextRecord();
@@ -57,5 +57,12 @@ namespace Collector
                 Map(m => m.DateTime).Name("datetime");
             }
         }
+    }
+
+    public class DataCSV
+    {
+        public int Id { get; set; }
+        public decimal Value { get; set; }
+        public DateTime DateTime { get; set; }
     }
 }
