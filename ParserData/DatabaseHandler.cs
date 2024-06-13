@@ -30,7 +30,13 @@ namespace ParserData
                 //Insertar datos nuevos
                 foreach (var (datetime, value) in datos)
                 {
-                    string insertQuery = "INSERT INTO Pruebas(datetime, value) VALUES (@datetime, @value)";
+                    string insertQuery = @"
+                        IF NOT EXISTS (SELECT 1 FROM EnergyDemand_Spain WHERE datetime = @datetime)
+                        BEGIN
+                            INSERT INTO EnergyDemand_Spain(datetime, value)
+                            VALUES (@datetime, @value)
+                        END";
+
                     using (var command = new SqlCommand(insertQuery, connection))
                     {
                         command.Parameters.AddWithValue("@datetime", datetime);

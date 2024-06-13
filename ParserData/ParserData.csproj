@@ -165,7 +165,6 @@
     <Compile Include="DatabaseHandler.cs" />
     <Compile Include="JsonData.cs" />
     <Compile Include="Fetcher.cs" />
-    <Compile Include="MongoDBHandler.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

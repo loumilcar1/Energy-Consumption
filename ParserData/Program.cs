@@ -11,7 +11,7 @@ namespace ParserData
             {
                 Fetcher fetcher = new Fetcher();
                 Parser parser = new Parser();
-                DatabaseHandler baseDatosManager = new DatabaseHandler();
+                DatabaseHandler databaseManager = new DatabaseHandler();
 
                 // 1- Fetch data
                 string jsonContent = await fetcher.FetchDataAsync();
@@ -20,7 +20,7 @@ namespace ParserData
                 var data = Parser.ParserData(jsonContent);
 
                 // 3- Insert data into database
-                await baseDatosManager.InsertDataAsync(data);
+                await databaseManager.InsertDataAsync(data);
 
                 // Wait for the user to press Enter to close the console
                 Console.WriteLine("Press Enter to exit...");

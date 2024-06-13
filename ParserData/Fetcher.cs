@@ -41,8 +41,8 @@ namespace ParserData
             else
             {
                 // Use URL for current day's data
-                string today = DateTime.Now.ToString("yyyy-MM-dd");
-                url = $"{baseUrl}?start_date={today}T00:00&end_date={today}T23:59&time_trunc=day";
+                 string today = DateTime.Now.ToString("yyyy-MM-dd");
+                 url = $"{baseUrl}?start_date={today}T00:00&end_date={today}T23:59&time_trunc=day";
             }
            
             try
@@ -52,15 +52,15 @@ namespace ParserData
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
 
-                // Print the fetched data
-                Console.WriteLine("Data fetched:");
-                Console.WriteLine(responseBody);
-
-                //// Check if the response body is empty, it is neccesary?
+                // Check if responseBody is null or empty, it is neccesary?
                 if (string.IsNullOrEmpty(responseBody))
                 {
                     Console.WriteLine("Error fetching data");
                 }
+
+                // Print the fetched data
+                Console.WriteLine("Data fetched:");
+                Console.WriteLine(responseBody);
                 return responseBody;
             }
             catch (HttpRequestException e)
