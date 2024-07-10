@@ -92,16 +92,17 @@ namespace ParserData
             return startDate;
         }
 
-        public async Task<DateTime> GetLastDateRegionAsync()
+        public async Task<DateTime> GetLastDateRegionAsync(int regionId)
         {
             DateTime startDate;
 
-            string query = "SELECT MAX(datetime) FROM EnergyDemand_Region";
+            string query = "SELECT MAX(datetime) FROM EnergyDemand_Region WHERE id_region = @id_region";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@id_region", regionId);
                 object result = await command.ExecuteScalarAsync();
 
                 if (result != DBNull.Value && result != null)

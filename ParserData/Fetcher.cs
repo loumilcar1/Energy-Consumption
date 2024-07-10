@@ -10,7 +10,7 @@ namespace ParserData
     {
         private static readonly HttpClient client = new HttpClient();
 
-        //Configurable URL parameters from App.config
+        // Configurable URL parameters from App.config
         private readonly string baseUrl;
         private readonly string startDate;
         private readonly string endDate;
@@ -18,6 +18,7 @@ namespace ParserData
         private readonly string geoLimit;
         private readonly string geoIds;
         private readonly bool useConfigurableUrl;
+
         public Fetcher()
         {
             baseUrl = ConfigurationManager.AppSettings["ApiBaseUrl"];
@@ -43,29 +44,28 @@ namespace ParserData
             else
             {
                 // Determine the start date based on the last date in the database
-                DatabaseHandler dbSpainHandler = new DatabaseHandler();
-                DatabaseHandler dbRegionHandler = new DatabaseHandler();
-                DateTime lastDateSpainInDb = await dbSpainHandler.GetLastDateSpainAsync();
-                DateTime lastDateRegionInDb = await dbRegionHandler.GetLastDateRegionAsync();
+                DatabaseHandler dbHandler = new DatabaseHandler();
+                DateTime lastDateSpainInDb = await dbHandler.GetLastDateSpainAsync();
                 DateTime today = DateTime.Today;
 
                 // Construct urlSpain
-                if (lastDateSpainInDb < today)
+                if (lastDateSpainInDb.Date < today)
                 {
                     DateTime startDateSpain = lastDateSpainInDb.AddDays(1);
                     urlSpain = $"{baseUrl}?start_date={startDateSpain:yyyy-MM-dd}T00:00&end_date={today:yyyy-MM-dd}T23:59&time_trunc=day";
                 }
 
-                if (lastDateRegionInDb.Month != today.Month || lastDateRegionInDb.Year != today.Year)
+                // Prepare to collect responses for all regions
+                List<Task<(int, string)>> regionTasks = new List<Task<(int, string)>>();
+
+                // Iterate through each region and create its URL
+                foreach (var region in RegionConfigurations.Configurations)
                 {
-                    DateTime startDateRegion = lastDateRegionInDb.AddDays(1);
+                    DateTime lastDateRegionInDb = await dbHandler.GetLastDateRegionAsync(region.Key);
 
-                    // Prepare to collect responses for all regions
-                    List<Task<(int, string)>> regionTasks = new List<Task<(int, string)>>();
-
-                    // Iterate through each region and create its URL
-                    foreach (var region in RegionConfigurations.Configurations)
+                    if (lastDateRegionInDb.Month != today.Month || lastDateRegionInDb.Year != today.Year)
                     {
+                        DateTime startDateRegion = new DateTime(lastDateRegionInDb.Year, lastDateRegionInDb.Month, 1).AddMonths(1);
                         string regionUrl = $"{baseUrl}?start_date={startDateRegion:yyyy-MM-dd}T00:00&end_date={today:yyyy-MM-dd}T23:59&time_trunc=month&geo_limit={region.Value.geoLimit}&geo_ids={region.Value.geoId}";
 
                         Console.WriteLine($"Fetching data for region {region.Key} with URL: {regionUrl}");
@@ -73,23 +73,24 @@ namespace ParserData
                         // Add the task to fetch region data
                         regionTasks.Add(FetchRegionDataAsync(region.Key, regionUrl));
                     }
+                }
 
-                    // Await all region data fetches, handling exceptions for each task
-                    var regionResults = await Task.WhenAll(regionTasks);
+                // Await all region data fetches, handling exceptions for each task
+                var regionResults = await Task.WhenAll(regionTasks);
 
-                    // Populate the responseRegions dictionary
-                    foreach (var (regionId, regionJson) in regionResults)
+                // Populate the responseRegions dictionary
+                foreach (var (regionId, regionJson) in regionResults)
+                {
+                    if (!string.IsNullOrEmpty(regionJson))
                     {
-                        if (!string.IsNullOrEmpty(regionJson))
-                        {
-                            responseRegions[regionId] = regionJson;
-                        }
+                        responseRegions[regionId] = regionJson;
                     }
                 }
             }
             if (urlSpain == null && responseRegions.Count == 0)
             {
                 // No new data to fetch
+                Console.WriteLine("The data is already updated.");
                 return (null, null);
             }
 

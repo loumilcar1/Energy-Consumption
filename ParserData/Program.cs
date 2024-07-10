@@ -17,7 +17,7 @@ namespace ParserData
                 var (jsonSpain, jsonRegion) = await fetcher.FetchDataAsync();
 
                 // Check if jsonSpain and jsonRegion are null
-                if (jsonSpain != null && jsonRegion != null)
+                if (jsonSpain != null || jsonRegion != null)
                 {
                     // 2- Parse JSON data
                     var (dataSpain, dataRegion) = Parser.ParserData(jsonSpain, jsonRegion);
