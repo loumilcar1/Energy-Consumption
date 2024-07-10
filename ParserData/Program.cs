@@ -14,13 +14,21 @@ namespace ParserData
                 DatabaseHandler databaseManager = new DatabaseHandler();
 
                 // 1- Fetch data
-                string jsonContent = await fetcher.FetchDataAsync();
+                var (jsonSpain, jsonRegion) = await fetcher.FetchDataAsync();
 
-                // 2- Parse JSON data
-                var data = Parser.ParserData(jsonContent);
+                // Check if jsonSpain and jsonRegion are null
+                if (jsonSpain != null && jsonRegion != null)
+                {
+                    // 2- Parse JSON data
+                    var (dataSpain, dataRegion) = Parser.ParserData(jsonSpain, jsonRegion);
 
-                // 3- Insert data into database
-                await databaseManager.InsertDataAsync(data);
+                    // 3- Insert data into database
+                    await databaseManager.InsertDataAsync(dataSpain, dataRegion);
+                }
+                else
+                {
+                    Console.WriteLine("No data fetched. Data is already up to date. Skipping parsing and database insertion.");
+                }
 
                 // Wait for the user to press Enter to close the console
                 Console.WriteLine("Press Enter to exit...");

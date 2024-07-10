@@ -162,6 +162,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RegionConfigurations.cs" />
     <Compile Include="DatabaseHandler.cs" />
     <Compile Include="JsonData.cs" />
     <Compile Include="Fetcher.cs" />
