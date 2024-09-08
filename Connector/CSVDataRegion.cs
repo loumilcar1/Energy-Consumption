@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Connector
 {
-    class CSVData
+    class CSVDataRegion
     {
         public DateTime DateTime { get; set; }
         public decimal Value { get; set; }
+        public int Id_Region { get; set; }
     }
 }
-

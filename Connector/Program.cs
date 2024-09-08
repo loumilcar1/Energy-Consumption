@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Collector
+namespace Connector
 {
     public class Program
     {
@@ -12,12 +12,22 @@ namespace Collector
             {
                 DatabaseHandler databaseHandler = new DatabaseHandler();
                 CreateOrUpdateCSV csvHandler = new CreateOrUpdateCSV();
-
-                //Fetch data from database
+                Console.WriteLine("4- Data exported to CSV.");
+                Console.WriteLine("\n");
+                // Fetch data from EnergyDemand_Spain
                 List<CSVData> records = await databaseHandler.FetchDataAsync();
-
-                // Create or update the CSV file
+                // Create or update the CSV file for EnergyDemand_Spain
                 csvHandler.UpdateCsv(records);
+
+                // Fetch data from EnergyConsumption_Region
+                List<CSVDataRegion> regionRecords = await databaseHandler.FetchDataRegionAsync();
+                // Create or update the CSV file for EnergyConsumption_Region
+                csvHandler.UpdateCsvRegion(regionRecords);
+                
+
+                // Espera a que el usuario presione Enter para cerrar la consola
+              
+                Console.ReadLine();
             }
             catch (Exception ex)
             {

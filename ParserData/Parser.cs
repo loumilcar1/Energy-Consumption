@@ -38,6 +38,7 @@ namespace ParserData
             }
 
             // Print parsed data
+            Console.WriteLine("2- Data parsed:\n");
             Console.WriteLine("Date \t\t\t\t Value");
             foreach (var (datetime, value) in parsedData)
             {
@@ -50,6 +51,7 @@ namespace ParserData
         private static (DateTime datetime, decimal value, int id_region)[] ParseJsonRegion(Dictionary<int, string> jsonRegionMap)
         {
             var allParsedData = new List<(DateTime datetime, decimal value, int id_region)>();
+        
 
             foreach (var kvp in jsonRegionMap)
             {
@@ -71,6 +73,14 @@ namespace ParserData
                     decimal value = item.value;
                     allParsedData.Add((datetime, value, regionId));
                 }
+            }
+            // Print parsed data
+            Console.WriteLine("\n");
+            Console.WriteLine("2- Data parsed:\n");;
+            Console.WriteLine("Date \t\t\t Value\t\t IdRegion");
+            foreach (var (datetime, value, id_region) in allParsedData)
+            {
+                Console.WriteLine($"{datetime:yyyy-MM-dd HH:mm:ss}\t{value}\t\t{id_region}");
             }
 
             return allParsedData.ToArray();

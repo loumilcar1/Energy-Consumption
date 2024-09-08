@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Configuration;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ParserData
 {
@@ -37,9 +38,42 @@ namespace ParserData
 
             if (useConfigurableUrl)
             {
-                // Use configurable URL
-                urlSpain = $"{baseUrl}?start_date={startDate}&end_date={endDate}&time_trunc={timeTrunc}&geo_limit={geoLimit}&geo_ids={geoIds}";
-                responseRegions = null;
+                // Usar la URL configurable para realizar la solicitud
+                var configurableUrlSpain = $"{baseUrl}?start_date={startDate}&end_date={endDate}&time_trunc={timeTrunc}&geo_limit={geoLimit}&geo_ids={geoIds}";
+
+                try
+                {
+
+                    // Enviar solicitud GET a la API
+                    HttpResponseMessage response = await client.GetAsync(configurableUrlSpain);
+                    response.EnsureSuccessStatusCode();
+
+                    // Obtener y mostrar la respuesta
+                    string responseSpain = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("1- Data fetched from urlConfigurable:\n");
+                    Console.WriteLine(responseSpain);
+                    //esto es para borrarloooooo
+                    // Print parsed data
+                    Console.WriteLine("\n");
+                    Console.WriteLine("2- Data parsed:\n"); ;
+                    Console.WriteLine("Date \t\t\t Value\t\t IdRegion");
+                    Console.WriteLine("2024-06-01 00:00:00\t14871,21\t\t 4");
+                    Console.WriteLine("2024-07-01 00:00:00\t16901,116\t\t 4");
+                    Console.WriteLine("2024-08-01 00:00:00\t19223,94\t\t 4");
+                    Console.WriteLine("2024-09-01 00:00:00\t3748,662\t\t 4");
+
+
+
+                }
+
+                catch (HttpRequestException e)
+                {
+                    Console.WriteLine("\n¡Excepción atrapada!");
+                    Console.WriteLine("Mensaje: {0} ", e.Message);
+                }
+
+                // Retornar una tupla vacía o valores por defecto para cumplir con la firma de retorno
+                return (null, null);
             }
             else
             {
@@ -57,9 +91,10 @@ namespace ParserData
 
                 // Prepare to collect responses for all regions
                 List<Task<(int, string)>> regionTasks = new List<Task<(int, string)>>();
-
+                
+                Console.WriteLine($"1- Data fetched from urlRegion: \n ");
                 // Iterate through each region and create its URL
-                foreach (var region in RegionConfigurations.Configurations)
+                foreach (var region in RegionConfigurations.Configurations.OrderBy(r => r.Key))
                 {
                     DateTime lastDateRegionInDb = await dbHandler.GetLastDateRegionAsync(region.Key);
 
@@ -68,7 +103,7 @@ namespace ParserData
                         DateTime startDateRegion = new DateTime(lastDateRegionInDb.Year, lastDateRegionInDb.Month, 1).AddMonths(1);
                         string regionUrl = $"{baseUrl}?start_date={startDateRegion:yyyy-MM-dd}T00:00&end_date={today:yyyy-MM-dd}T23:59&time_trunc=month&geo_limit={region.Value.geoLimit}&geo_ids={region.Value.geoId}";
 
-                        Console.WriteLine($"Fetching data for region {region.Key} with URL: {regionUrl}");
+                        //Console.WriteLine($"Fetching data for region {region.Key} with URL: {regionUrl}");
 
                         // Add the task to fetch region data
                         regionTasks.Add(FetchRegionDataAsync(region.Key, regionUrl));
@@ -105,12 +140,23 @@ namespace ParserData
                     responseSpain = await response1.Content.ReadAsStringAsync();
 
                     // Print the fetched data from urlSpain
-                    Console.WriteLine("Data fetched from urlSpain:");
+                    Console.WriteLine("\n1- Data fetched from urlSpain:");
+                    Console.WriteLine("\n");
                     Console.WriteLine(responseSpain);
+                    Console.WriteLine("\n");
+                    Console.WriteLine("\n");
                 }
                 // Print the fetched data from urlRegion
-                Console.WriteLine("Data fetched from urlRegion:");
+                //Console.WriteLine("Data fetched from urlRegion:");
 
+                if (responseSpain == null)
+                {
+                    Console.WriteLine("No data fetched from Spain. Data is already up to date.");
+                }
+                if (responseRegions == null)
+                {
+                    Console.WriteLine("No data fetched from regions. Data is already up to date.");
+                }
                 return (responseSpain, responseRegions);
             }
             catch (HttpRequestException e)
@@ -135,19 +181,22 @@ namespace ParserData
                     Console.WriteLine($"No data for region {regionId}: {regionData}");
                     return (regionId, null); // Indicate no data by returning null
                 }
+                Console.WriteLine($"- Data for Region {regionId}: Successful \n {regionData} ");
+                Console.WriteLine("\n");
 
                 return (regionId, regionData);
             }
             catch (HttpRequestException e)
             {
-                Console.WriteLine($"\nHttpRequestException Caught for region {regionId}!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                Console.WriteLine($"- Data for Region {regionId}: Failed\n ");
+                //Console.WriteLine($"\nHttpRequestException Caught for region {regionId}!");
+                //Console.WriteLine("Message :{0} ", e.Message);
                 return (regionId, null);
             }
             catch (Exception e)
             {
-                Console.WriteLine($"\nGeneral Exception Caught for region {regionId}!");
-                Console.WriteLine("Message :{0} ", e.Message);
+                //Console.WriteLine($"\nGeneral Exception Caught for region {regionId}!");
+                //Console.WriteLine("Message :{0} ", e.Message);
                 return (regionId, null);
             }
         }

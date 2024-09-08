@@ -65,7 +65,8 @@ namespace ParserData
                 }
             }
             // Data inserted
-            Console.WriteLine("Data inserted into database.");
+            Console.WriteLine("\n");
+            Console.WriteLine("3- Data inserted into database.");
         }
 
         public async Task<DateTime> GetLastDateSpainAsync()
