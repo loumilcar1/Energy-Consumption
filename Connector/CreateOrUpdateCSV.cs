@@ -86,51 +86,78 @@ namespace Connector
                     writer.WriteLine($"{record.DateTime},{record.Value}");
                 }
             }
-            Console.WriteLine($"Data successfully appended to CSV: {Path.GetFileName(filePath)}");
+            Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
         }
 
         //REGION
-            public void UpdateCsvRegion(List<CSVDataRegion> records)
+        public DateTime? GetLastExportedDateRegion()
         {
-            // Obtener el mes y el año actuales
-            string currentMonthYear = DateTime.Now.ToString("yyyy_MM");
+            // Buscar todos los archivos CSV que tengan el patrón "RegionData_*.csv" en la ruta especificada
+            var csvFiles = Directory.GetFiles(_regionFilePath, "RegionData_*.csv");
 
-            // Determinar el archivo CSV actual
-            string currentFilePath = Path.Combine(Path.GetDirectoryName(_regionFilePath), $"RegionData_{currentMonthYear}.csv");
+            // Si no hay archivos, devolver null, lo que indica que aún no se ha exportado nada
+            if (csvFiles.Length == 0) return null;
 
-            // Si el archivo CSV no existe, lo crea; si existe, lo actualiza
-            if (!File.Exists(currentFilePath))
+            // Ordenar los archivos por nombre (suponiendo que los nombres contienen año y mes)
+            var latestCsvFile = csvFiles.OrderByDescending(f => f).FirstOrDefault();
+
+            // Leer el archivo y obtener la última línea (es decir, la última fecha registrada)
+            var lastLine = File.ReadLines(latestCsvFile).LastOrDefault();
+
+            if (lastLine != null)
             {
-                using (StreamWriter writer = new StreamWriter(currentFilePath, false)) // `false` para sobrescribir el archivo
-                {
-                    writer.WriteLine("IdRegion,DateTime,Value"); // Encabezado del CSV
+                // Dividir la última línea por comas (asumiendo que el formato es "Region,DateTime,Value")
+                var lastRecord = lastLine.Split(',');
 
-                    foreach (var record in records)
+                // Intentar analizar el segundo campo como una fecha
+                if (DateTime.TryParse(lastRecord[1], out DateTime lastDateTime))
+                {
+                    return lastDateTime;
+                }
+            }
+
+            // Si no se puede obtener la última fecha, devolver null
+            return null;
+        }
+        // Nuevo método para actualizar o crear los CSV de EnergyConsumption_Region
+        public void UpdateCsvRegion(List<CSVDataRegion> records)
+        {
+            var groupedByMonthRegion = records.GroupBy(r => new { r.DateTime.Year, r.DateTime.Month }).OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+
+            foreach (var group in groupedByMonthRegion)
+            {
+                string monthYear = $"{group.Key.Year}_{group.Key.Month:D2}";
+                string filePath = Path.Combine(_regionFilePath, $"RegionData_{monthYear}.csv");
+
+                if (!File.Exists(filePath))
+                {
+                    using (StreamWriter writer = new StreamWriter(filePath, false))
                     {
-                        writer.WriteLine($"{record.Id_Region},{record.DateTime},{record.Value}");
+                        writer.WriteLine("DateTime,Region,Value");
+                        foreach (var record in group)
+                        {
+                            writer.WriteLine($"{record.DateTime},{record.Id_Region},{record.Value}");
+                        }
                     }
                 }
-
-                //Console.WriteLine($"Region data successfully exported to new CSV: {Path.GetFileName(currentFilePath)}");
-                Console.WriteLine($"Region data updated successfully: {Path.GetFileName(currentFilePath)}");
-            }
-            else
-            {
-                AppendToCsvRegion(currentFilePath, records);
+                else
+                {
+                    AppendToCsvRegion(filePath, group.ToList());
+                }
             }
         }
 
+        // Método para añadir nuevos registros a los CSV de regiones
         private void AppendToCsvRegion(string filePath, List<CSVDataRegion> records)
         {
-            using (StreamWriter writer = new StreamWriter(filePath, true)) // `true` para añadir al archivo existente
+            using (StreamWriter writer = new StreamWriter(filePath, true))
             {
                 foreach (var record in records)
                 {
-                    writer.WriteLine($"{record.Id_Region},{record.DateTime},{record.Value}");
+                    writer.WriteLine($"{record.DateTime},{record.Id_Region},{record.Value}");
                 }
             }
-
-            //Console.WriteLine($"Region data successfully appended to CSV: {Path.GetFileName(filePath)}");
+            Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
         }
     }
 }

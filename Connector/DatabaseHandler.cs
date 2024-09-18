@@ -61,39 +61,38 @@ namespace Connector
 
         public async Task<List<CSVDataRegion>> FetchDataRegionAsync()
         {
-            string query = "SELECT  datetime, value, id_region FROM EnergyDemand_Region";
+            DateTime? lastExportedDateRegion = _csvHandler.GetLastExportedDateRegion();
+            string query = lastExportedDateRegion.HasValue
+                ? "SELECT datetime, value, id_region FROM EnergyDemand_Region WHERE datetime > @LastExportedDateRegion ORDER BY datetime"
+                : "SELECT datetime, value, id_region FROM EnergyDemand_Region ORDER BY datetime";
+
             List<CSVDataRegion> data = new List<CSVDataRegion>();
 
-            try
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+                await connection.OpenAsync();
+                SqlCommand command = new SqlCommand(query, connection);
+
+                if (lastExportedDateRegion.HasValue)
                 {
-                    await connection.OpenAsync();
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = await command.ExecuteReaderAsync();
-
-                    while (await reader.ReadAsync())
-                    {
-                        DateTime dateTime = reader.GetDateTime(reader.GetOrdinal("datetime"));
-                        decimal value = reader.GetDecimal(reader.GetOrdinal("value"));
-                        int idRegion = reader.GetInt32(reader.GetOrdinal("id_region"));
-
-                        data.Add(new CSVDataRegion
-                        {
-                            DateTime = dateTime,
-                            Value = value,
-                            Id_Region = idRegion
-                        });
-                    }
+                    command.Parameters.AddWithValue("@LastExportedDateRegion", lastExportedDateRegion.Value);
                 }
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine("SQL Error: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("General Error: " + ex.Message);
+
+                SqlDataReader reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    DateTime datetime = reader.GetDateTime(0);
+                    decimal value = reader.GetDecimal(1);
+                    int region = reader.GetInt32(2);
+
+                    data.Add(new CSVDataRegion
+                    {
+                        DateTime = datetime,
+                        Value = value,
+                        Id_Region = region,
+                    });
+                }
             }
 
             return data;
