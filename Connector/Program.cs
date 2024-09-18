@@ -10,19 +10,21 @@ namespace Connector
         {
             try
             {
-                DatabaseHandler databaseHandler = new DatabaseHandler();
+                // Crear la instancia de CreateOrUpdateCSV
                 CreateOrUpdateCSV csvHandler = new CreateOrUpdateCSV();
-                Console.WriteLine("4- Data exported to CSV.");
-                Console.WriteLine("\n");
+
+                // Pasar esa instancia a DatabaseHandler
+                DatabaseHandler databaseHandler = new DatabaseHandler(csvHandler);
+
                 // Fetch data from EnergyDemand_Spain
                 List<CSVData> records = await databaseHandler.FetchDataAsync();
                 // Create or update the CSV file for EnergyDemand_Spain
                 csvHandler.UpdateCsv(records);
 
                 // Fetch data from EnergyConsumption_Region
-                List<CSVDataRegion> regionRecords = await databaseHandler.FetchDataRegionAsync();
+                //List<CSVDataRegion> regionRecords = await databaseHandler.FetchDataRegionAsync();
                 // Create or update the CSV file for EnergyConsumption_Region
-                csvHandler.UpdateCsvRegion(regionRecords);
+                //csvHandler.UpdateCsvRegion(regionRecords);
                 
 
                 // Espera a que el usuario presione Enter para cerrar la consola

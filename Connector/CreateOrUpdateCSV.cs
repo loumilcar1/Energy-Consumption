@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 
 namespace Connector
 {
@@ -16,52 +17,80 @@ namespace Connector
             _regionFilePath = ConfigurationManager.AppSettings["CSVRegionFilePath"];
         }
 
-        public void UpdateCsv(List<CSVData> records)
+        public DateTime? GetLastExportedDate()
         {
-            // Obtener el mes y el año actuales
-            string currentMonthYear = DateTime.Now.ToString("yyyy_MM");
+            var csvFiles = Directory.GetFiles(_filePath, "SpainData_*.csv");
 
-            // Determinar el archivo CSV actual
-            string currentFilePath = Path.Combine(Path.GetDirectoryName(_filePath), $"SpainData_{currentMonthYear}.csv");
-
-            // Si el archivo CSV no existe, lo crea; si existe, lo actualiza
-            if (!File.Exists(currentFilePath))
+            if (csvFiles.Length == 0)
             {
-                using (StreamWriter writer = new StreamWriter(currentFilePath, false)) // `false` para sobrescribir el archivo
+                // Si no hay archivos, devolver null, lo que implica que no se ha exportado nada aún
+                return null;
+            }
+
+            // Ordenar los archivos por nombre (año y mes) para obtener el más reciente
+            var latestCsvFile = csvFiles.OrderByDescending(f => f).FirstOrDefault();
+
+            // Leer el archivo y obtener la última línea (última fecha registrada)
+            var lastLine = File.ReadLines(latestCsvFile).LastOrDefault();
+
+            if (lastLine != null)
+            {
+                var lastRecord = lastLine.Split(',');
+                if (DateTime.TryParse(lastRecord[0], out DateTime lastDateTime))
                 {
-                    writer.WriteLine("DateTime,Value"); // Encabezado del CSV
-
-                    foreach (var record in records)
-                    {
-                        writer.WriteLine($"{record.DateTime},{record.Value}");
-                    }
+                    return lastDateTime;
                 }
+            }
 
-                //Console.WriteLine($"Data successfully exported to new CSV: {Path.GetFileName(currentFilePath)}");
-            }
-            else
-            {
-                AppendToCsv(currentFilePath, records);
-            }
+            return null; // Si algo falla, devuelve null
         }
 
+        // Método para actualizar o crear CSVs según los datos recibidos
+        public void UpdateCsv(List<CSVData> records)
+        {
+            // Agrupar los datos por mes
+            var groupedByMonth = records
+                .GroupBy(r => new { r.DateTime.Year, r.DateTime.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+
+            foreach (var group in groupedByMonth)
+            {
+                string monthYear = $"{group.Key.Year}_{group.Key.Month:D2}";
+                string filePath = Path.Combine(_filePath, $"SpainData_{monthYear}.csv");
+
+                if (!File.Exists(filePath))
+                {
+                    // Si el archivo no existe, crearlo
+                    using (StreamWriter writer = new StreamWriter(filePath, false))
+                    {
+                        writer.WriteLine("DateTime,Value");
+                        foreach (var record in group)
+                        {
+                            writer.WriteLine($"{record.DateTime},{record.Value}");
+                        }
+                    }
+                }
+                else
+                {
+                    // Si el archivo ya existe, añadir los nuevos registros
+                    AppendToCsv(filePath, group.ToList());
+                }
+            }
+        }
         private void AppendToCsv(string filePath, List<CSVData> records)
         {
-            using (StreamWriter writer = new StreamWriter(filePath, true)) // `true` para añadir al archivo existente
+            using (StreamWriter writer = new StreamWriter(filePath, true))
             {
                 foreach (var record in records)
                 {
                     writer.WriteLine($"{record.DateTime},{record.Value}");
                 }
             }
-            Console.WriteLine($"Spain data updated successfully: {Path.GetFileName(filePath)}");
-            Console.WriteLine("\n");
-            Console.WriteLine($"Region data updated successfully: RegionData_2024_09.csv");
-
-            //Console.WriteLine($"Data successfully appended to CSV: {Path.GetFileName(filePath)}");
+            Console.WriteLine($"Data successfully appended to CSV: {Path.GetFileName(filePath)}");
         }
 
-        public void UpdateCsvRegion(List<CSVDataRegion> records)
+        //REGION
+            public void UpdateCsvRegion(List<CSVDataRegion> records)
         {
             // Obtener el mes y el año actuales
             string currentMonthYear = DateTime.Now.ToString("yyyy_MM");

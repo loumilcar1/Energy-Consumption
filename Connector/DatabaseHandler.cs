@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Connector
@@ -9,21 +11,36 @@ namespace Connector
     class DatabaseHandler
     {
         private readonly string _connectionString;
+        private readonly CreateOrUpdateCSV _csvHandler;
 
-        public DatabaseHandler()
+        public DatabaseHandler(CreateOrUpdateCSV csvHandler)
         {
+            _csvHandler = csvHandler ?? throw new ArgumentNullException(nameof(csvHandler)); // Asegurarse de que no sea nulo
             _connectionString = ConfigurationManager.ConnectionStrings["EnergyConsumptionDB"].ConnectionString;
         }
 
         public async Task<List<CSVData>> FetchDataAsync()
         {
-            string query = "SELECT datetime, value FROM EnergyDemand_Spain";
+            // Obtener la última fecha exportada desde los CSV
+            DateTime? lastExportedDate = _csvHandler.GetLastExportedDate();
+
+            // Si no hay una última fecha exportada, tomaremos todos los datos
+            string query = lastExportedDate.HasValue
+                ? "SELECT datetime, value FROM EnergyDemand_Spain WHERE datetime > @LastExportedDate ORDER BY datetime"
+                : "SELECT datetime, value FROM EnergyDemand_Spain ORDER BY datetime";
+
             List<CSVData> data = new List<CSVData>();
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 SqlCommand command = new SqlCommand(query, connection);
+
+                if (lastExportedDate.HasValue)
+                {
+                    command.Parameters.AddWithValue("@LastExportedDate", lastExportedDate.Value);
+                }
+
                 SqlDataReader reader = await command.ExecuteReaderAsync();
 
                 while (await reader.ReadAsync())
@@ -81,5 +98,7 @@ namespace Connector
 
             return data;
         }
+
     }
+
 }
