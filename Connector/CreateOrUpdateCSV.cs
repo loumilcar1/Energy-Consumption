@@ -79,13 +79,35 @@ namespace Connector
         }
         private void AppendToCsv(string filePath, List<CSVData> records)
         {
-            using (StreamWriter writer = new StreamWriter(filePath, true))
+            // Leer registros existentes del archivo
+            var existingRecords = new HashSet<string>();
+
+            if (File.Exists(filePath))
+            {
+                using (var reader = new StreamReader(filePath))
+                {
+                    reader.ReadLine(); // Omitir la línea de encabezado
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        existingRecords.Add(line); // Guardar cada registro existente en el conjunto (HashSet)
+                    }
+                }
+            }
+
+            // Añadir solo los registros que no existan ya
+            using (var writer = new StreamWriter(filePath, true))
             {
                 foreach (var record in records)
                 {
-                    writer.WriteLine($"{record.DateTime},{record.Value}");
+                    string csvLine = $"{record.DateTime},{record.Value}";
+                    if (!existingRecords.Contains(csvLine))
+                    {
+                        writer.WriteLine(csvLine); // Solo escribir si no es duplicado
+                    }
                 }
             }
+
             Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
         }
 
@@ -110,7 +132,7 @@ namespace Connector
                 var lastRecord = lastLine.Split(',');
 
                 // Intentar analizar el segundo campo como una fecha
-                if (DateTime.TryParse(lastRecord[1], out DateTime lastDateTime))
+                if (DateTime.TryParse(lastRecord[0], out DateTime lastDateTime))
                 {
                     return lastDateTime;
                 }
@@ -150,11 +172,32 @@ namespace Connector
         // Método para añadir nuevos registros a los CSV de regiones
         private void AppendToCsvRegion(string filePath, List<CSVDataRegion> records)
         {
-            using (StreamWriter writer = new StreamWriter(filePath, true))
+            // Leer registros existentes del archivo
+            var existingRecords = new HashSet<string>();
+
+            if (File.Exists(filePath))
+            {
+                using (var reader = new StreamReader(filePath))
+                {
+                    reader.ReadLine(); // Omitir la línea de encabezado
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        existingRecords.Add(line); // Guardar cada registro existente en el conjunto (HashSet)
+                    }
+                }
+            }
+
+            // Añadir solo los registros que no existan ya
+            using (var writer = new StreamWriter(filePath, true))
             {
                 foreach (var record in records)
                 {
-                    writer.WriteLine($"{record.DateTime},{record.Id_Region},{record.Value}");
+                    string csvLine = $"{record.DateTime},{record.Id_Region},{record.Value}";
+                    if (!existingRecords.Contains(csvLine))
+                    {
+                        writer.WriteLine(csvLine); // Solo escribir si no es duplicado
+                    }
                 }
             }
             Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
