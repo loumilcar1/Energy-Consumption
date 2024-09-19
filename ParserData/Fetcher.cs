@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace ParserData
 {
@@ -48,22 +50,38 @@ namespace ParserData
                     HttpResponseMessage response = await client.GetAsync(configurableUrlSpain);
                     response.EnsureSuccessStatusCode();
 
-                    // Obtener y mostrar la respuesta
+                    // Obtener la respuesta como string
                     string responseSpain = await response.Content.ReadAsStringAsync();
                     Console.WriteLine("1- Data fetched from urlConfigurable:\n");
                     Console.WriteLine(responseSpain);
-                    //esto es para borrarloooooo
+
+                    var data = JsonConvert.DeserializeObject<JsonData>(responseSpain);
+
+                    if (data?.Included == null)
+                    {
+                        throw new ArgumentNullException(nameof(data.Included), "The JSON does not contain any data");
+                    }
+
+                    var values = data.Included[0].Attributes.Values;
+                    var parsedData = new (DateTime datetime, decimal value)[values.Count];
+
+                    int index = 0;
+
+                    foreach (var item in values)
+                    {
+                        DateTime datetime = DateTime.Parse(item.Datetime);
+                        decimal value = item.value;
+                        parsedData[index++] = (datetime, value);
+                    }
+
                     // Print parsed data
                     Console.WriteLine("\n");
-                    Console.WriteLine("2- Data parsed:\n"); ;
-                    Console.WriteLine("Date \t\t\t Value\t\t IdRegion");
-                    Console.WriteLine("2024-06-01 00:00:00\t14871,21\t\t 4");
-                    Console.WriteLine("2024-07-01 00:00:00\t16901,116\t\t 4");
-                    Console.WriteLine("2024-08-01 00:00:00\t19223,94\t\t 4");
-                    Console.WriteLine("2024-09-01 00:00:00\t3748,662\t\t 4");
-
-
-
+                    Console.WriteLine("2- Data parsed:\n");
+                    Console.WriteLine("Date \t\t\t\t Value");
+                    foreach (var (datetime, value) in parsedData)
+                    {
+                        Console.WriteLine($"{datetime}\t\t{value}");
+                    }
                 }
 
                 catch (HttpRequestException e)
@@ -124,8 +142,6 @@ namespace ParserData
             }
             if (urlSpain == null && responseRegions.Count == 0)
             {
-                // No new data to fetch
-                Console.WriteLine("The data is already updated.");
                 return (null, null);
             }
 
@@ -140,8 +156,7 @@ namespace ParserData
                     responseSpain = await response1.Content.ReadAsStringAsync();
 
                     // Print the fetched data from urlSpain
-                    Console.WriteLine("\n1- Data fetched from urlSpain:");
-                    Console.WriteLine("\n");
+                    Console.WriteLine("\n1- Data fetched from urlSpain:\n");
                     Console.WriteLine(responseSpain);
                     Console.WriteLine("\n");
                     Console.WriteLine("\n");
