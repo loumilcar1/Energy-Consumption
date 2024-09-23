@@ -11,48 +11,6 @@ namespace Connector
     {
         public static async Task Main(string[] args)
         {
-            // Configura el planificador
-            StdSchedulerFactory factoryConnector = new StdSchedulerFactory();
-            IScheduler schedulerConnector = await factoryConnector.GetScheduler();
-
-            // Inicia el planificador
-            await schedulerConnector.Start();
-
-            // Define el trabajo
-            IJobDetail jobConnector = JobBuilder.Create<DataExportJob>()
-                .WithIdentity("dataExportJob", "group2") // Identidad única del trabajo
-                .Build();
-
-            // Trigger para ejecutar inmediatamente al arrancar la aplicación
-            ITrigger triggerNowConnector = TriggerBuilder.Create()
-                .WithIdentity("triggerNowConnector", "group2")
-                .StartNow()
-                .Build();
-
-            // Trigger para ejecutar todos los días a las 12:00 PM
-            ITrigger triggerDailyConnector = TriggerBuilder.Create()
-                .WithIdentity("triggerDailyConnector", "group2")
-                .WithSchedule(CronScheduleBuilder.DailyAtHourAndMinute(12, 57))
-                .ForJob(jobConnector)
-                .Build();
-
-            // Programa el trabajo y los triggers en el planificador
-            await schedulerConnector.ScheduleJob(jobConnector, triggerNowConnector);
-            await schedulerConnector.ScheduleJob(triggerDailyConnector);
-
-            // Espera a que el usuario presione Enter para cerrar la consola
-            //Console.WriteLine("Presione Enter para salir...");
-            Console.ReadLine();
-
-            // Detén el planificador
-            await schedulerConnector.Shutdown();
-
-        }
-    }
-    public class DataExportJob : IJob
-    {
-        public async Task Execute(IJobExecutionContext context)
-        {
             try
             {
                 // Imprimir solo la hora en formato HH:mm:ss
