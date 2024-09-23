@@ -67,7 +67,9 @@ namespace Connector
                         foreach (var record in group)
                         {
                             writer.WriteLine($"{record.DateTime},{record.Value}");
+                            
                         }
+                        Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
                     }
                 }
                 else
@@ -106,9 +108,9 @@ namespace Connector
                         writer.WriteLine(csvLine); // Solo escribir si no es duplicado
                     }
                 }
+                Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
             }
-
-            Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
+            
         }
 
         //REGION
@@ -200,7 +202,8 @@ namespace Connector
                     }
                 }
             }
-            Console.WriteLine($"Data successfully exported to CSV: {Path.GetFileName(filePath)}");
+            Console.WriteLine("\n");
+            Console.WriteLine($"Data exported to CSV successfully: {Path.GetFileName(filePath)}");
         }
     }
 }

@@ -30,7 +30,7 @@ namespace ParserData
             // Trigger para ejecutar todos los días a las 12:00 PM
             ITrigger triggerDaily = TriggerBuilder.Create()
                 .WithIdentity("triggerDaily", "group1")
-                .WithSchedule(CronScheduleBuilder.DailyAtHourAndMinute(12, 0))
+                .WithSchedule(CronScheduleBuilder.DailyAtHourAndMinute(13, 08))
                 .ForJob(job) 
                 .Build();
 
@@ -54,6 +54,10 @@ namespace ParserData
         {
             try
             {
+
+                // Imprimir solo la hora en formato HH:mm:ss
+                Console.WriteLine("Start: " + DateTime.Now);
+                Console.WriteLine("\n");
                 Fetcher fetcher = new Fetcher();
                 Parser parser = new Parser();
                 DatabaseHandler databaseManager = new DatabaseHandler();
@@ -69,10 +73,12 @@ namespace ParserData
 
                     // 3- Insert data into database
                     await databaseManager.InsertDataAsync(dataSpain, dataRegion);
+                    Console.WriteLine("\n");
                 }
                 else
                 {
                     Console.WriteLine("No data fetched. Data is already up to date.");
+                    Console.WriteLine("\n");
                 }
             }
             catch (Exception e)
