@@ -1,6 +1,4 @@
-﻿using Quartz;
-using Quartz.Impl;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace ParserData
@@ -15,6 +13,11 @@ namespace ParserData
                 // Imprimir solo la hora en formato HH:mm:ss
                 Console.WriteLine("Start: " + DateTime.Now);
                 Console.WriteLine("\n");
+
+                // Inicializar la base de datos si no existe
+                DatabaseInitializer dbInitializer = new DatabaseInitializer();
+                dbInitializer.InitializeDatabase();
+
                 Fetcher fetcher = new Fetcher();
                 Parser parser = new Parser();
                 DatabaseHandler databaseManager = new DatabaseHandler();

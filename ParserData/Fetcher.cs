@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Newtonsoft.Json;
 
 namespace ParserData
