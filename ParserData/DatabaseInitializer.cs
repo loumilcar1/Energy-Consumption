@@ -28,7 +28,7 @@ namespace ParserData
         {
             if (!DatabaseExists("EnergyConsumption"))
             {
-                Console.WriteLine("La base de datos no existe. Creando base de datos y tablas...");
+                Console.WriteLine("The database does not exist. Creating database and tables...");
 
                 // Ejecutar script para crear la base de datos
                 string createDbScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts", "EnergyConsumptionDB.sql");
@@ -38,11 +38,11 @@ namespace ParserData
                 string tablesScriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts", "TablesEnergyConsumption.sql");
                 ExecuteSqlScript(_connectionString, tablesScriptPath);
 
-                Console.WriteLine("Base de datos y tablas creadas correctamente.");
+                Console.WriteLine("Database and tables created successfully.");
             }
             else
             {
-                Console.WriteLine("La base de datos ya existe.");
+                Console.WriteLine("The database already exists.");
             }
         }
 
@@ -89,7 +89,7 @@ namespace ParserData
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error al ejecutar la siguiente parte del script: \n{scriptPart}\nError: {ex.Message}");
+                                Console.WriteLine($"Error executing the following part of the script: \n{scriptPart}\nError: {ex.Message}");
                             }
                         }
                     }
@@ -97,7 +97,7 @@ namespace ParserData
             }
             else
             {
-                Console.WriteLine($"El archivo de script {scriptPath} no se encontró.");
+                Console.WriteLine($"The script file {scriptPath} was not found.");
             }
         }
     }
